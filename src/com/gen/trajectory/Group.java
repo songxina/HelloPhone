@@ -7,7 +7,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 public class Group {
 
 	ArrayList<String> cellGroup = new ArrayList<String>();//基站号
-	ArrayList<Location> cellLocationGroup = new ArrayList<Location>();//基站号	
+	ArrayList<Location> cellLocationGroup = new ArrayList<Location>();//基站坐标号	
 	double possibility = 0;
 	String gourpID;//hour+idCount
 	String centerCellLocaion;

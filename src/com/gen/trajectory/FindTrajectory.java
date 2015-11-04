@@ -1,11 +1,8 @@
 package com.gen.trajectory;
-
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
 
 import de.fhpotsdam.unfolding.geo.Location;
 
@@ -15,7 +12,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 	//3.出现概率（以聚类为单位）
 public class FindTrajectory {
 
-	HashMap<String, String> cellToGroup = new HashMap<String, String>();//记录基站对应聚类的index
+	HashMap<String, String> cellToGroup = new HashMap<String, String>();//记录基站对应聚类的index,  cell_hour idIndex
 	ArrayList<Group> cellGroup[] = new ArrayList[24];//记录每小时聚类
 	double groupTransferByHour[][][];//以聚类为单位，每小时转移矩阵。记录转移概率（聚类中所有点记录之和）
 	public double distanceBetweenCells[][];//记录不同基站间的距离
@@ -28,6 +25,8 @@ public class FindTrajectory {
 	String[] startGroup= new String[24];//每小时最频繁的起始点，返回groupID
 	ArrayList<String> path[] = new ArrayList[24];//记录每小时提取的路径，cellID链
 	
+	GeneticWay genetic;
+	
 	public FindTrajectory(MatrixForGroup matrixForGroup){
 		this.matrixForGroup = matrixForGroup;
 		cellToGroup = matrixForGroup.getCellToGroup();
@@ -38,6 +37,7 @@ public class FindTrajectory {
 		startGroup = matrixForGroup.getStartGroup();
 		cellToCoordinate = matrixForGroup.getCellToCoordinate();
 		cellIndexMap = matrixForGroup.getCellIndexMap();
+		genetic = new GeneticWay(matrixForGroup);
 		
 		for(int hour=0;hour<24;hour++){
 			path[hour] = new ArrayList<String>();
@@ -60,6 +60,7 @@ public class FindTrajectory {
 		ArrayList<String> path = find.calRegularPath(hour);
 		for(String s:path)
 			System.out.println(s);
+		find.getPathByTraverse();
 	}
 	public ArrayList<String> getRegularPath(int hour){
 		return path[hour];
@@ -77,17 +78,32 @@ public class FindTrajectory {
 		//
 		
 		String tempID = groupStart.getCenterCell();//group中心基站
+		ArrayList<Integer> pathIndex = new ArrayList<Integer>();
+		pathIndex.add(groupStartIndex);
+		
 		ArrayList<String> pathThrough = new ArrayList<String>();
 		pathThrough.add(tempID);
 		while(true){
 			String gindex = cellToGroup.get(tempID+"_"+hour);
 			Group g = cellGroup[hour].get(Integer.parseInt(gindex));
 			tempID = calNextPossibility(g, glist,groupStart.getCenterCell());
+			pathIndex.add(Integer.parseInt(cellToGroup.get(tempID+"_"+hour)));
 			if(pathThrough.contains(tempID))
 				break;
 			else
 				pathThrough.add(tempID);
 		}
+		//最佳路径位置序列
+		ArrayList<String> path = new ArrayList<String>();
+		System.out.println("Path!:");
+		for(int in:pathIndex){
+			System.out.print(in+"_");
+			path.add(in+"");
+		}
+			
+		System.out.println();
+		double value = genetic.optimiticScore(path, hour);
+		System.out.println("最佳路径误差值："+value);
 		return pathThrough;
 	}
 	
@@ -126,10 +142,10 @@ public class FindTrajectory {
 					cos = calCosAngel(a, b, c);
 				}
 				else{
-					System.out.println(cosHome+"   cosHome");
+//					System.out.println(cosHome+"   cosHome");
 					cos = -1*calCosAngel(a, b, home);
 				} 					
-				System.out.println(cos+"   aaaaaaaaaa");
+//				System.out.println(cos+"   aaaaaaaaaa");
 			}
 			else 
 				cos = calCosAngel(a, b, c);
@@ -204,4 +220,62 @@ public class FindTrajectory {
 		return result;
 	}
 
+	//遍历所有可能，得到所有得分
+	public ArrayList<String> getPathByTraverse(){
+		int hour=7;
+		
+//		String[] goodPath = {6_14_15_11_9_4_10_13_12_5_3_7_1_7}
+		
+		
+		//生成该小时聚类数组
+		ArrayList<Group> groupByHour = cellGroup[hour];
+		String[] groupByHourIDs = new String[groupByHour.size()];
+		for(int i=0;i<groupByHour.size();i++){
+			groupByHourIDs[i] = groupByHour.get(i).getGourpID().split("_")[1];
+		}
+		//得到所有路径
+		ArrayList<ArrayList<String>> allPaths = Traverse.getAllCombinations(groupByHourIDs);
+		
+		int size = allPaths.size();
+		double score[] = new double[size];
+		for(int i=0;i<size;i++)
+			score[i] = Double.MAX_VALUE;
+		//得到所有路径的误差值
+		int averageLength = genetic.getAverageGroupNumOfPaths(hour);
+		System.out.println("平均聚类个数："+averageLength);
+		for(int i=0;i<size;i++){
+			ArrayList<String> path = allPaths.get(i);
+			if(Math.abs(path.size()-averageLength)>5)
+				continue;
+			double value = genetic.optimiticScore(path, hour);
+//			for(String s:path)
+//				System.out.print(s+"-");
+//			System.out.println(size+"_"+i+"---"+value);
+			score[i] = value;
+		}
+		//选出误差值最小路径
+		int minIndex = 0;
+		double minValue = 99999;//Double.MAX_VALUE;
+		for(int i=0;i<size;i++){
+			if(minValue>score[i]){
+				minIndex = i;
+				minValue = score[i];
+			}
+				
+		}
+		ArrayList<String> minPath = allPaths.get(minIndex);
+		//groupID变为Center cell
+		ArrayList<String> minPathCell = new ArrayList<String>();
+		for(String s:minPath){
+			int i=Integer.parseInt(s);
+			Group g = cellGroup[hour].get(i);
+			minPathCell.add(g.getCenterCell());
+		}
+		for(String s:minPath)
+			System.out.print(s+"-");
+		System.out.println(size+"_"+minValue);
+		return minPathCell;
+	}
+	
+	
 }

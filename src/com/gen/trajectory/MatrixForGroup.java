@@ -22,7 +22,7 @@ public class MatrixForGroup {
 	
 	//聚类
 	int daySize = 24;
-	ArrayList<String> cellAll[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131225 共21天
+	ArrayList<String> cellAll[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131228 共25天
 	Cluster cluster;
 	HashMap<String, String> cellToGroup = new HashMap<String, String>();//记录基站对应聚类
 	ArrayList<Group> cellGroup[] = new ArrayList[24];//记录每小时聚类

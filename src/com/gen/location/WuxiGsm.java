@@ -181,15 +181,15 @@ public class WuxiGsm extends PApplet {
 		HomeDetection  h = new HomeDetection(locByHourWeekends,sizeWeekends,mapNumberWeekends);
 		home = h.calculate();
 		
-//		System.out.println("Important locatoin detecting...");
-//		ImportantLocDetection im = new ImportantLocDetection(device);
-//		im.calculate();
-//		im.print();
-//		importantLocations = im.getImportantLoc();
-//		
-//		for (Location loca:mapTempWeekdays.keySet())
-//			if(mapTempWeekdays.get(loca)!=1)
-//			System.out.println(loca.x+"_"+loca.y);
+		System.out.println("Important locatoin detecting...");
+		ImportantLocDetection im = new ImportantLocDetection(device);
+		im.calculate();
+		im.print();
+		importantLocations = im.getImportantLoc();
+		
+		for (Location loca:mapTempWeekdays.keySet())
+			if(mapTempWeekdays.get(loca)!=1)
+			System.out.println(loca.x+"_"+loca.y);
 	}
 
 	
@@ -434,15 +434,15 @@ public class WuxiGsm extends PApplet {
 		}
 		
 		//重要节点
-//		if(showImportantLoc)
-//		for(Location key:importantLocations.keySet()){
-//			double score = importantLocations.get(key);
-//			fill(255, 255,0, 50);
-//			 stroke(255,0,0);
-//			 ScreenPosition tloc = map.getScreenPosition(key);
-//			 int s = (int) (25*score);
-//			ellipse(tloc.x, tloc.y, s, s);
-//		}
+		if(showImportantLoc)
+		for(Location key:importantLocations.keySet()){
+			double score = importantLocations.get(key);
+			fill(255, 255,0, 50);
+			 stroke(255,0,0);
+			 ScreenPosition tloc = map.getScreenPosition(key);
+			 int s = (int) (25*score);
+			ellipse(tloc.x, tloc.y, s, s);
+		}
 	}
 	
 	//输出某一范围基站信息
