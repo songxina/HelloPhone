@@ -23,6 +23,7 @@ public class FindTrajectory {
 	int cellSize = 0;//该设备所经过的所有不同基站数
 	MatrixForGroup matrixForGroup;
 	String[] startGroup= new String[24];//每小时最频繁的起始点，返回groupID
+	String[] endGroup= new String[24];//每小时最频繁的终止点，返回groupID
 	ArrayList<String> path[] = new ArrayList[24];//记录每小时提取的路径，cellID链
 	
 	GeneticWay genetic;
@@ -35,9 +36,13 @@ public class FindTrajectory {
 		this.distanceBetweenCells = matrixForGroup.getDistanceBetweenCells();
 		cellSize = matrixForGroup.getSize();
 		startGroup = matrixForGroup.getStartGroup();
+		endGroup = matrixForGroup.getEndGroup();
 		cellToCoordinate = matrixForGroup.getCellToCoordinate();
 		cellIndexMap = matrixForGroup.getCellIndexMap();
 		genetic = new GeneticWay(matrixForGroup);
+		
+		for(int i=0;i<startGroup.length;i++)
+			System.out.println(startGroup[i]+"_"+endGroup[i]);
 		
 		for(int hour=0;hour<24;hour++){
 			path[hour] = new ArrayList<String>();
@@ -53,7 +58,7 @@ public class FindTrajectory {
 //		System.out.println(x);
 		//99249788048010590
 		//99249764168730152
-		String device = "99249788048010590";
+		String device = "99249764168730152";
 		MatrixForGroup matrixGroup= new MatrixForGroup(device);
 		FindTrajectory find = new FindTrajectory(matrixGroup);
 		int hour=7;
@@ -224,8 +229,19 @@ public class FindTrajectory {
 	public ArrayList<String> getPathByTraverse(){
 		int hour=7;
 		
-//		String[] goodPath = {6_14_15_11_9_4_10_13_12_5_3_7_1_7}
+		String[] goodPath2 = {"6","14","15","11","9","4","10","13","12","5","3","7","1","7"};
+		ArrayList<String> temp2 = new ArrayList<String>();
+		for(String s:goodPath2)
+			temp2.add(s);
+		double valuet2 = genetic.optimiticScore(temp2, hour);
+		System.out.println("期待最佳路径误差值："+valuet2);
 		
+		String[] goodPath = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13"};
+		ArrayList<String> temp = new ArrayList<String>();
+		for(String s:goodPath)
+			temp.add(s);
+		double valuet = genetic.optimiticScore(temp, hour);
+		System.out.println("奇怪最佳路径误差值："+valuet);
 		
 		//生成该小时聚类数组
 		ArrayList<Group> groupByHour = cellGroup[hour];
@@ -243,9 +259,11 @@ public class FindTrajectory {
 		//得到所有路径的误差值
 		int averageLength = genetic.getAverageGroupNumOfPaths(hour);
 		System.out.println("平均聚类个数："+averageLength);
+		averageLength=13;
+		
 		for(int i=0;i<size;i++){
 			ArrayList<String> path = allPaths.get(i);
-			if(Math.abs(path.size()-averageLength)>5)
+			if(Math.abs(path.size()-averageLength)>3)
 				continue;
 			double value = genetic.optimiticScore(path, hour);
 //			for(String s:path)

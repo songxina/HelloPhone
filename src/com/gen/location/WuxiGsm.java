@@ -74,7 +74,7 @@ public class WuxiGsm extends PApplet {
 	boolean showPath = true;//q键控制
 	boolean showImportantLoc = false;//q键控制
 	String startValueGroup[];//给定grouplist,返回每小时最常起始的groupID（数组）
-	
+	String endValueGroup[];
 
 	public static void main(String[] agrs) {
 		PApplet.main(new String[] { "com.gen.location.WuxiGsm" });
@@ -115,6 +115,7 @@ public class WuxiGsm extends PApplet {
 		}
 		cellGroup = matrixGroup.calAllGroup();//聚类信息
 		startValueGroup = matrixGroup.getStartGroup();//起始位置
+		endValueGroup = matrixGroup.getEndGroup();//终止位置
 		find = new FindTrajectory(matrixGroup);
 		
 		calLocation.setStationData();//查询有关station的数据
@@ -181,15 +182,15 @@ public class WuxiGsm extends PApplet {
 		HomeDetection  h = new HomeDetection(locByHourWeekends,sizeWeekends,mapNumberWeekends);
 		home = h.calculate();
 		
-		System.out.println("Important locatoin detecting...");
-		ImportantLocDetection im = new ImportantLocDetection(device);
-		im.calculate();
-		im.print();
-		importantLocations = im.getImportantLoc();
-		
-		for (Location loca:mapTempWeekdays.keySet())
-			if(mapTempWeekdays.get(loca)!=1)
-			System.out.println(loca.x+"_"+loca.y);
+//		System.out.println("Important locatoin detecting...");
+//		ImportantLocDetection im = new ImportantLocDetection(device);
+//		im.calculate();
+//		im.print();
+//		importantLocations = im.getImportantLoc();
+//		
+//		for (Location loca:mapTempWeekdays.keySet())
+//			if(mapTempWeekdays.get(loca)!=1)
+//			System.out.println(loca.x+"_"+loca.y);
 	}
 
 	
@@ -399,7 +400,7 @@ public class WuxiGsm extends PApplet {
 						ellipse(x,y,5,5);
 					}
 				}
-				//标注每小时最大概率起始点
+				//标注每小时最大概率起始点 和 终止点
 				String id = startValueGroup[hour];
 				int index = Integer.parseInt(id.split("_")[1]);
 				Group sg = groups.get(index);
@@ -408,6 +409,17 @@ public class WuxiGsm extends PApplet {
 				fill(0, 255,255, 50);
 				stroke(255,255,255);
 				ellipse(cpos.x, cpos.y, 40, 40);
+				
+				//标注每小时最大概率 终止点
+				String eid = endValueGroup[hour];
+				int eindex = Integer.parseInt(eid.split("_")[1]);
+				Group eg = groups.get(eindex);
+				String ecc =eg.getCenterCell();
+				ScreenPosition ecpos = map.getScreenPosition(matrixGroup.stringToLoc(ecc));
+				fill(0, 255,255, 50);
+				stroke(255,255,255);
+				ellipse(ecpos.x, ecpos.y, 40, 40);
+//				System.out.println("起始和终止点："+id+"_"+eid);
 				
 				//路径
 				ArrayList<String> path = find.getRegularPath(hour);

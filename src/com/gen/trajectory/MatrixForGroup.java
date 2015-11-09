@@ -183,10 +183,10 @@ public class MatrixForGroup {
 		return center;
 	}
 	
-	//给定grouplist,返回每小时最常起始的groupID（数组）
-	public String[] getStartGroup(){
+	//给定grouplist,返回每小时最常终止的groupID（数组）
+	public String[] getEndGroup(){
 		String group[] = new String[24];
-		//计算每个group的startValue
+		//计算每个group的endValue
 		for(int day=0;day<daySize;day++){
 			for(int hour=0;hour<24;hour++){
 				//取前三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
@@ -194,23 +194,23 @@ public class MatrixForGroup {
 				int nsize = cellAll[day][hour].size();
 				if(number>nsize)
 					number = nsize;
-				for(int i=0;i<number;i++){
+				for(int i=nsize-number;i<nsize;i++){
 					String cell = cellAll[day][hour].get(i);
 					String gid = getGroupIDByCell(cell, hour);
 					int gindex = Integer.parseInt(gid.split("_")[1]);
 					Group groupTemp = new Group();
 					groupTemp = cellGroup[hour].get(gindex);
-					groupTemp.startValue +=3-i;
+					groupTemp.endValue += 4-(nsize-i);
 				}
 			}
 		}
-		//选取最大startValue的group
+		//选取最大endValue的group
 		for(int hour=0;hour<24;hour++){
 			int maxIndex = 0;
 			double maxValue = 0;
 			for(int i=0;i<cellGroup[hour].size();i++){
 				Group g = cellGroup[hour].get(i);
-				double v = g.startValue;
+				double v = g.endValue;
 				if(v > maxValue){
 					maxValue = v;
 					maxIndex = i;
@@ -221,7 +221,44 @@ public class MatrixForGroup {
 		return group;
 	}
 	
-	
+	//给定grouplist,返回每小时最常起始的groupID（数组）
+		public String[] getStartGroup(){
+			String group[] = new String[24];
+			//计算每个group的startValue
+			for(int day=0;day<daySize;day++){
+				for(int hour=0;hour<24;hour++){
+					//取后三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
+					int number = 3;
+					int nsize = cellAll[day][hour].size();
+					if(number>nsize)
+						number = nsize;
+					if(nsize>5)
+					for(int i=0;i<number;i++){
+						String cell = cellAll[day][hour].get(i);
+						String gid = getGroupIDByCell(cell, hour);
+						int gindex = Integer.parseInt(gid.split("_")[1]);
+						Group groupTemp = new Group();
+						groupTemp = cellGroup[hour].get(gindex);
+						groupTemp.startValue +=3-i;
+					}
+				}
+			}
+			//选取最大startValue的group
+			for(int hour=0;hour<24;hour++){
+				int maxIndex = 0;
+				double maxValue = 0;
+				for(int i=0;i<cellGroup[hour].size();i++){
+					Group g = cellGroup[hour].get(i);
+					double v = g.startValue;
+					if(v > maxValue){
+						maxValue = v;
+						maxIndex = i;
+					}
+				}
+				group[hour] = hour+"_"+maxIndex;
+			}
+			return group;
+		}
 	
 	public ArrayList<String> getDifferentCell() {
 		return differentCell;

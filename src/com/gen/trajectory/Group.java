@@ -12,6 +12,7 @@ public class Group {
 	String gourpID;//hour+idCount
 	String centerCellLocaion;
 	public double startValue = 0;//衡量该group为起始group的概率
+	public double endValue = 0;//衡量该group为终止group的概率
 	
 	//查询group是否包括cell
 	public boolean hasCell(String cell){
