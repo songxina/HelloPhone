@@ -194,6 +194,7 @@ public class MatrixForGroup {
 				int nsize = cellAll[day][hour].size();
 				if(number>nsize)
 					number = nsize;
+				if(nsize>5)						//数量大于5的路径算作有效路径
 				for(int i=nsize-number;i<nsize;i++){
 					String cell = cellAll[day][hour].get(i);
 					String gid = getGroupIDByCell(cell, hour);
@@ -232,7 +233,7 @@ public class MatrixForGroup {
 					int nsize = cellAll[day][hour].size();
 					if(number>nsize)
 						number = nsize;
-					if(nsize>5)
+					if(nsize>5)           //数量大于5的路径算作有效路径
 					for(int i=0;i<number;i++){
 						String cell = cellAll[day][hour].get(i);
 						String gid = getGroupIDByCell(cell, hour);
