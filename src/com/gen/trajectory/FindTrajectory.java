@@ -1,4 +1,5 @@
 package com.gen.trajectory;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -248,7 +249,7 @@ public class FindTrajectory {
 	public ArrayList<String> getPathByTraverse(){
 		int hour=7;
 		
-		String[] goodPath2 = {"6","14","15","11","9","4","10","13","12","5","3","7","1"};
+		String[] goodPath2 = {"6","14","15","11","9","4","10","13","12","5","3"};
 		ArrayList<String> temp2 = new ArrayList<String>();
 		for(String s:goodPath2)
 			temp2.add(s);
@@ -272,18 +273,19 @@ public class FindTrajectory {
 		ArrayList<Group> groupByHour = cellGroup[hour];
 		String start = startValueGroup[hour];
 		String end = endValueGroup[hour];
-		ArrayList<Group> groupByHourWithoutSE = new ArrayList<Group>();
 		
 		//去掉start和end
+		ArrayList<Group> groupByHourWithoutSE = new ArrayList<Group>();
 		for(Group g:groupByHour){
 			if(g.getGourpID().equals(start) || g.getGourpID().equals(end))
 				continue;
 			groupByHourWithoutSE.add(g);
 		}
-//		String[] groupByHourIDs = new String[groupByHour.size()];
-		String[] groupByHourIDs = new String[8];
-//		for(int i=0;i<groupByHour.size();i++){
-		for(int i=0;i<8;i++){
+		//只取前10个聚类
+		int groupSize=groupByHour.size()-2;//保留个数，除掉start和end之后的个数	
+//		groupSize = 10;
+		String[] groupByHourIDs = new String[groupSize];
+		for(int i=0;i<groupSize;i++){
 			groupByHourIDs[i] = groupByHourWithoutSE.get(i).getGourpID().split("_")[1];
 		}
 		
@@ -291,17 +293,27 @@ public class FindTrajectory {
 		ArrayList<ArrayList<String>> allPathsCTemp = Traverse.getAllCombinations(groupByHourIDs);
 		System.out.println("全部组合个数："+allPathsCTemp.size()+" 聚类个数："+groupByHourIDs.length);
 		
-		//去掉个数过少的组合
+		//过滤组合
 		ArrayList<ArrayList<String>> allPathsC = new ArrayList<ArrayList<String>>();
- 		for(ArrayList<String> list:allPathsCTemp){
- 			if(list.size()==8)   //只保留个数7的
- 				allPathsC.add(list);
- 		}
+		allPathsC = allPathsCTemp;
+// 		for(ArrayList<String> list:allPathsCTemp){
+// 			if(list.size()==8)   //只保留个数7的
+// 				allPathsC.add(list);
+// 		}
 		
-		
+// 		allPathsC.clear();
+//// 		String[] goodPath3 = {"14","15","11","9","4","10","13","12","5"};
+// 		String[] goodPath3 = {"4","5","9","10","11","12","13","14","15"};
+//		ArrayList<String> ltemp = new ArrayList<String>();
+// 		for(int i=0;i<goodPath3.length;i++)
+//			ltemp.add(goodPath3[i]);
+// 		allPathsC.add(ltemp);
+// 		System.out.println("剩余组合个数："+allPathsC.size()+" 聚类个数："+groupByHourIDs.length);
+
 		//得到所有组合的排序序列
- 		ArrayList<ArrayList<String>> allPathTemp = Traverse.combine(allPathsC);
- 		System.out.println("全部排序个数："+allPathTemp.size());
+// 		ArrayList<ArrayList<String>> allPathTemp = Traverse.combine(allPathsC);
+// 		System.out.println("全部排序个数："+allPathTemp.size());
+ 		ArrayList<ArrayList<String>> allPathTemp = allPathsC;
  		
  		//加上起始和终止节点
  		ArrayList<ArrayList<String>> allPaths = new ArrayList<ArrayList<String>>();
@@ -311,6 +323,9 @@ public class FindTrajectory {
  			l.addAll(list);
  			l.add(end.split("_")[1]);
  			allPaths.add(l);
+// 			for(String s:l)
+// 				System.out.print(s+" ");
+// 			System.out.println();
  		}
  		
 		int size = allPaths.size();
@@ -323,12 +338,6 @@ public class FindTrajectory {
 		int count=0;
 		for(int i=0;i<size;i++){
 			ArrayList<String> path = allPaths.get(i);
-			if(Math.abs(path.size()-averageLength)>1)
-				continue;
-			if(!path.get(0).equals(start))
-				continue;
-			if(!path.get(path.size()-1).equals(end))
-				continue;
 			double value = genetic.optimiticScore(path, hour);
 //			for(String s:path)
 //				System.out.print(s+"-");
@@ -340,7 +349,7 @@ public class FindTrajectory {
 		}
 		//选出误差值最小路径
 		int minIndex = 0;
-		double minValue = 99999;//Double.MAX_VALUE;
+		double minValue = Double.MAX_VALUE;
 		for(int i=0;i<size;i++){
 			if(minValue>score[i]){
 				minIndex = i;
@@ -356,9 +365,21 @@ public class FindTrajectory {
 			Group g = cellGroup[hour].get(i);
 			minPathCell.add(g.getCenterCell());
 		}
-		for(String s:minPath)
-			System.out.print(s+"-");
-		System.out.println(size+"_"+minValue);
+//		for(String s:minPath)
+//			System.out.print(s+"-");
+//		System.out.println("_"+minValue);
+		
+		int countbest=0;
+		for(int i=0;i<size;i++){
+			if(score[i]==minValue){
+				ArrayList<String> bests = allPaths.get(i);
+				for(String s:bests)
+					System.out.print(s+"-");
+				System.out.println("_"+minValue);
+				countbest++;
+			}
+		}
+		System.out.println(countbest);
 		return minPathCell;
 	}
 	

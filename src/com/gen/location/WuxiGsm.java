@@ -104,7 +104,7 @@ public class WuxiGsm extends PApplet {
 			//获取设备信息
 		//99249788048010590
 		//99249764168730152
-		String device = "99249764168730152";
+		String device = "99249788048010590";
 		try {
 			getLocations(device);
 			matrixGroup = new MatrixForGroup(device);//聚类信息
