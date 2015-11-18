@@ -267,7 +267,6 @@ public class FindTrajectory {
 		
 		int averageLength = genetic.getAverageGroupNumOfPaths(hour);
 		System.out.println("sample平均聚类个数："+averageLength);
-		averageLength=7;
 		//-----------------------------------------------------------------------------
 		//生成该小时聚类数组
 		ArrayList<Group> groupByHour = cellGroup[hour];
@@ -281,9 +280,8 @@ public class FindTrajectory {
 				continue;
 			groupByHourWithoutSE.add(g);
 		}
-		//只取前10个聚类
-		int groupSize=groupByHour.size()-2;//保留个数，除掉start和end之后的个数	
-//		groupSize = 10;
+		//得到groupID链表
+		int groupSize=groupByHourWithoutSE.size();//保留个数，除掉start和end之后的个数	
 		String[] groupByHourIDs = new String[groupSize];
 		for(int i=0;i<groupSize;i++){
 			groupByHourIDs[i] = groupByHourWithoutSE.get(i).getGourpID().split("_")[1];
@@ -295,20 +293,19 @@ public class FindTrajectory {
 		
 		//过滤组合
 		ArrayList<ArrayList<String>> allPathsC = new ArrayList<ArrayList<String>>();
-		allPathsC = allPathsCTemp;
-// 		for(ArrayList<String> list:allPathsCTemp){
-// 			if(list.size()==8)   //只保留个数7的
-// 				allPathsC.add(list);
-// 		}
+ 		for(ArrayList<String> list:allPathsCTemp){
+ 			if(list.size()>=averageLength && list.size()<averageLength+4)   //只保留个数位于 平均长度 到 平均+4
+ 				allPathsC.add(list);
+ 		}
 		
 // 		allPathsC.clear();
 //// 		String[] goodPath3 = {"14","15","11","9","4","10","13","12","5"};
-// 		String[] goodPath3 = {"4","5","9","10","11","12","13","14","15"};
+// 		.0
 //		ArrayList<String> ltemp = new ArrayList<String>();
 // 		for(int i=0;i<goodPath3.length;i++)
 //			ltemp.add(goodPath3[i]);
 // 		allPathsC.add(ltemp);
-// 		System.out.println("剩余组合个数："+allPathsC.size()+" 聚类个数："+groupByHourIDs.length);
+ 		System.out.println("剩余组合个数："+allPathsC.size()+" 聚类个数："+groupByHourIDs.length);
 
 		//得到所有组合的排序序列
 // 		ArrayList<ArrayList<String>> allPathTemp = Traverse.combine(allPathsC);

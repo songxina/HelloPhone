@@ -357,6 +357,7 @@ public class WuxiGsm extends PApplet {
 					ce.addAll(groups.get(i).getCellGroup());
 				}
 				//每个聚类内部
+
 				for(int i=0;i<groups.size();i++){
 					Group group =  groups.get(i);
 					//标注聚类中心
@@ -365,6 +366,12 @@ public class WuxiGsm extends PApplet {
 					fill(0, 0,255, 70);
 					stroke(0,0,0);
 					ellipse(cpos.x, cpos.y, 35, 35);
+					//标注聚类编号
+					if(i<groups.size()/2){
+						fill(255);
+						this.textSize(19);
+						text(i, cpos.x, cpos.y);
+					}
 					
 					Location leftLoc = null;
 
