@@ -63,7 +63,9 @@ public class Show extends PApplet{
 		//99249789030016916  ³¤Â·¾¶
 		//99249764168730152
 		//99249788048010590
-		String device = "99249788048010590";
+		//99702516988779459
+		//99168971352354021
+		String device = "99249764168730152";
 		q = new QueryTrajectory(device);
 		try {
 			locAll = q.getAllTrajectory();

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.log4j.jmx.Agent;
+
 public class MatrixForPersonAndCell {
 
 	QueryTrajectory queryTrajectory;
@@ -13,6 +15,7 @@ public class MatrixForPersonAndCell {
 	int daySize = 24;
 	@SuppressWarnings("unchecked")
 	ArrayList<String> cellAll[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131225 共21天
+	ArrayList<String> cellAllCut[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131225 共21天，去掉不包含起始点和终止点的 序列
 	ArrayList<String> differentCell = new ArrayList<String>();//所有不同的基站
 	Map<String,String> cellToCoordinate = new HashMap<String,String>();//记录所有基站与坐标的对应关系
 	
@@ -20,7 +23,7 @@ public class MatrixForPersonAndCell {
 	double locations[][];//位置矩阵，记录出现概率
 	double transferAllDay[][];//全天转移矩阵。记录转移概率
 	double transferByHour[][][];//每小时转移矩阵。记录转移概率
-	HashMap<String, Integer> cellIndexMap = new HashMap<String, Integer>();
+	HashMap<String, Integer> cellIndexMap = new HashMap<String, Integer>();//基站ID对矩阵序号
 	int size = 0;//不同基站的个数
 	double distanceBetweenCells[][];//记录不同基站间的距离
 	
@@ -34,7 +37,10 @@ public class MatrixForPersonAndCell {
 		
 		differentCell.addAll(differentCelltemp);
 		size = differentCell.size();
+//		cellAllCut = queryTrajectory.getCellAll();
 		initialMatrix();
+		
+		cutCellAll();		//生成cellAllCut，去掉不包含起始点和终止点的 序列
 		fillTransferAllDay();
 		fillTranferByHour();
 		fillLocations();
@@ -63,6 +69,14 @@ public class MatrixForPersonAndCell {
 		
 		for(int i=0;i<size;i++)
 			cellIndexMap.put(differentCell.get(i), i);
+		
+		for(int day=0;day<daySize;day++){
+			for(int hour=0;hour<25;hour++){
+				cellAllCut[day][hour] = new ArrayList<String>();
+				cellAllCut[day][hour].addAll(cellAll[day][hour]);
+			}
+		}
+		
 	}
 	//计算全天转移矩阵
 	public void fillTransferAllDay(){
@@ -94,21 +108,21 @@ public class MatrixForPersonAndCell {
 		for(int hour=0;hour<24;hour++){
 			for(int day=0;day<daySize;day++){
 				String thisCell=null,nextCell=null;
-				ArrayList<String> trajectory = cellAll[day][hour];
+				ArrayList<String> trajectory = cellAllCut[day][hour];
 				int tSize = trajectory.size();
 				for(int i=0;i<tSize;i++){
 					boolean hasNext = true;
 					thisCell = trajectory.get(i);
 					if(i==tSize-1){
 						if(hour==23){
-							if(cellAll[(day+1)%daySize][0].size()!=0)
-								nextCell = cellAll[(day+1)%daySize][0].get(0);
+							if(cellAllCut[(day+1)%daySize][0].size()!=0)
+								nextCell = cellAllCut[(day+1)%daySize][0].get(0);
 							else 
 								hasNext = false;
 						}							
 						else{
-							if(cellAll[day][hour+1].size()!=0)
-								nextCell = cellAll[day][hour+1].get(0);
+							if(cellAllCut[day][hour+1].size()!=0)
+								nextCell = cellAllCut[day][hour+1].get(0);
 							else 
 								hasNext = false;
 						}						
@@ -245,21 +259,21 @@ public class MatrixForPersonAndCell {
 //			System.out.println();
 //		}
 //		System.out.println("-----------------------------------------------------------------");
-//		for(int hour=0;hour<24;hour++){
-//			System.out.println("--------------------------------"+hour);
-//			for(int i=0;i<size;i++){
-//				for(int j=0;j<size;j++)
-//					if(transferByHour[hour][i][j]!=0)
-//					System.out.print(transferByHour[hour][i][j]+" ");
-//				System.out.println();
-//			}
-//		}
-		System.out.println("----------------------------------------------------------------距离");
-		for(int i=0;i<size;i++){
-			for(int j=0;j<size;j++)
-				System.out.print(distanceBetweenCells[i][j]+" ");
-			System.out.println();
+		for(int hour=0;hour<24;hour++){
+			System.out.println("--------------------------------"+hour);
+			for(int i=0;i<size;i++){
+				for(int j=0;j<size;j++)
+					if(transferByHour[hour][i][j]!=0)
+						System.out.print(transferByHour[hour][i][j]+" ");
+				System.out.println();
+			}
 		}
+//		System.out.println("----------------------------------------------------------------距离");
+//		for(int i=0;i<size;i++){
+//			for(int j=0;j<size;j++)
+//				System.out.print(distanceBetweenCells[i][j]+" ");
+//			System.out.println();
+//		}
 	}
 	
 	public static void main(String[] args) throws ParseException {
@@ -304,4 +318,110 @@ public class MatrixForPersonAndCell {
 		return cellAll;
 	}
 
+	//给定grouplist,返回每小时最常终止的cellID（数组）
+		public String[] getEndCell(){	
+			//计算每个cell的endValue
+			int cellsEndValue[][] = new int[24][size];//记录每小时所有基站的评分
+			String endCell[] = new String[24]; //记录每小时终止cell
+			
+			for(int day=0;day<daySize;day++){
+				for(int hour=0;hour<24;hour++){
+					//取后三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
+					int number = 3;
+					int nsize = cellAll[day][hour].size();
+					if(number>nsize)
+						number = nsize;
+					if(nsize>5)						//数量大于5的路径算作有效路径
+					for(int i=nsize-number;i<nsize;i++){
+						String cell = cellAll[day][hour].get(i);
+						int index = cellIndexMap.get(cell);
+						cellsEndValue[hour][index] += 4-(nsize-i);
+					}
+				}
+			}
+			//选取最大endValue的cell
+			for(int hour=0;hour<24;hour++){
+				int maxIndex = 0;
+				double maxValue = 0;
+				for(int i=0;i<size;i++){
+					double v = cellsEndValue[hour][i];
+					if(v > maxValue){
+						maxValue = v;
+						maxIndex = i;
+					}
+				}
+				String maxCell = differentCell.get(maxIndex);
+				endCell[hour] = maxCell;
+			}
+			return endCell;
+		}
+		
+		//给定grouplist,返回每小时最常起始的cellID（数组）
+			public String[] getStartCell(){
+				//计算每个cell的startValue
+				int cellsStartValue[][] = new int[24][size];//记录每小时所有基站的评分
+				String startCell[] = new String[24]; //记录每小时起始cell
+				
+				for(int day=0;day<daySize;day++){
+					for(int hour=0;hour<24;hour++){
+						//取前三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
+						int number = 3;
+						int nsize = cellAll[day][hour].size();
+						if(number>nsize)
+							number = nsize;
+						if(nsize>5)           //数量大于5的路径算作有效路径
+							for(int i=nsize-number;i<nsize;i++){
+								String cell = cellAll[day][hour].get(i);
+//								System.out.println(cell);sd
+								int index = cellIndexMap.get(cell);
+								cellsStartValue[hour][index] += 3-i;
+							}
+					}
+				}
+				//选取最大startValue的group
+				for(int hour=0;hour<24;hour++){
+					int maxIndex = 0;
+					double maxValue = 0;
+					for(int i=0;i<size;i++){
+						double v = cellsStartValue[hour][i];
+						if(v > maxValue){
+							maxValue = v;
+							maxIndex = i;
+						}
+					}
+					String maxCell = differentCell.get(maxIndex);
+					startCell[hour] = maxCell;
+				}
+				return startCell;
+			}
+	
+	//调整cellAll，去掉不包含起始点和终止点的 序列
+		public void cutCellAll(){
+			
+			String[] startCell = getStartCell();
+			String[] endCell = getEndCell();
+//			for(int i=0;i<24;i++)
+//				System.out.println(startCell[i]+"_"+endCell[i]);
+			HashSet<String> set = new HashSet<String>();
+			
+			for(int hour=0;hour<24;hour++){
+				//求每天该小时出现过的不同基站的平均个数
+				int averageNum = 0;
+				for(int day=0;day<daySize;day++){
+					set.clear();
+					set.addAll(cellAllCut[day][hour]);
+					averageNum += set.size();
+				}
+				averageNum /= daySize;
+				for(int day=0;day<daySize;day++){
+//					if(cellAllCut[day][hour].contains(startCell[hour]) && cellAllCut[day][hour].contains(endCell[hour]))
+					if(cellAllCut[day][hour].size()>averageNum+2 && cellAllCut[day][hour].contains(endCell[hour]))
+//					if(cellAllCut[day][hour].size()>averageNum+2 )
+						continue;
+					else {
+						cellAllCut[day][hour].clear();
+					}
+				}
+			}
+		}
 }

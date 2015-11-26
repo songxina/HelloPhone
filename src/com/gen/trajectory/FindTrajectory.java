@@ -73,7 +73,7 @@ public class FindTrajectory {
 		
 		//99249788048010590
 		//99249764168730152
-		String device = "99249788048010590";
+		String device = "99249764168730152";
 		MatrixForGroup matrixGroup= new MatrixForGroup(device);
 		FindTrajectory find = new FindTrajectory(matrixGroup);
 		int hour=7;
@@ -119,16 +119,16 @@ public class FindTrajectory {
 				pathThrough.add(tempID);
 		}
 		//最佳路径位置序列
-		ArrayList<String> path = new ArrayList<String>();
-		System.out.println("Path!:");
-		for(int in:pathIndex){
-			System.out.print(in+"_");
-			path.add(in+"");
-		}
+//		ArrayList<String> path = new ArrayList<String>();
+//		System.out.println("Path!:");
+//		for(int in:pathIndex){
+//			System.out.print(in+"_");
+//			path.add(in+"");
+//		}
 			
-		System.out.println();
-		double value = genetic.optimiticScore(path, hour);
-		System.out.println("最佳路径误差值："+value);
+//		System.out.println();
+//		double value = genetic.optimiticScore(path, hour);
+//		System.out.println("最佳路径误差值："+value);
 		return pathThrough;
 	}
 	

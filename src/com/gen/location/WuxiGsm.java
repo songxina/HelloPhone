@@ -104,7 +104,9 @@ public class WuxiGsm extends PApplet {
 			//获取设备信息
 		//99249788048010590
 		//99249764168730152
-		String device = "99249788048010590";
+		//99702516988779459
+		//99168971352354021
+		String device = "99168971352354021";
 		try {
 			getLocations(device);
 			matrixGroup = new MatrixForGroup(device);//聚类信息
@@ -369,7 +371,7 @@ public class WuxiGsm extends PApplet {
 					//标注聚类编号
 					if(i<groups.size()/2){
 						fill(255);
-						this.textSize(19);
+						this.textSize(21);
 						text(i, cpos.x, cpos.y);
 					}
 					

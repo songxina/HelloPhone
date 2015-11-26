@@ -189,7 +189,7 @@ public class MatrixForGroup {
 		//计算每个group的endValue
 		for(int day=0;day<daySize;day++){
 			for(int hour=0;hour<24;hour++){
-				//取前三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
+				//取后三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
 				int number = 3;
 				int nsize = cellAll[day][hour].size();
 				if(number>nsize)
@@ -228,7 +228,7 @@ public class MatrixForGroup {
 			//计算每个group的startValue
 			for(int day=0;day<daySize;day++){
 				for(int hour=0;hour<24;hour++){
-					//取后三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
+					//取前三个，分别对group加startValue值，第一个cell加3，第二个加2，第三个加1.
 					int number = 3;
 					int nsize = cellAll[day][hour].size();
 					if(number>nsize)

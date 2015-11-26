@@ -11,7 +11,7 @@ public class Cluster {
 	ArrayList<Group> cellGroup[] = new ArrayList[24];
 	double distanceBetweenCells[][];//记录不同基站间的距离
 	HashMap<String, Integer> cellIndexMap = new HashMap<String, Integer>();
-	double radius = 400;
+	double radius = 450;
 	double locations[][];//位置矩阵，记录出现概率
 	ArrayList<String> differentCell = new ArrayList<String>();//出现过的所有基站
 	
