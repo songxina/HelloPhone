@@ -19,7 +19,7 @@ public class IntArray {
 	public void add( int d ){
 		int dlen = data.length;
 		if( length==dlen )
-			data = (int[])PApplet.expand(data);
+			data = PApplet.expand(data);
 		System.out.println("dataLen:"+data.length+" len:"+length);
 		data[length++] = d;
 	}

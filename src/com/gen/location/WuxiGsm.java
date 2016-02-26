@@ -1,7 +1,13 @@
 package com.gen.location;
 
 import java.awt.Image;
-import java.awt.Toolkit;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,20 +17,18 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gen.data.HomeDetection;
-import com.gen.data.ImportantLocDetection;
+import com.gen.locAndTrajectory.Device;
 import com.gen.trajectory.FindTrajectory;
 import com.gen.trajectory.MatrixForGroup;
 import com.gen.trajectory.Group;
 import com.gen.voronoi.MPolygon;
 import com.gen.voronoi.Voronoi;
-import com.widgets.Button;
 import com.widgets.CircleButton;
 import com.widgets.Control;
 import com.widgets.Panel;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
-import processing.core.PShape;
 import processing.event.MouseEvent;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -75,18 +79,21 @@ public class WuxiGsm extends PApplet {
 	boolean showImportantLoc = false;//q键控制
 	String startValueGroup[];//给定grouplist,返回每小时最常起始的groupID（数组）
 	String endValueGroup[];
-
+	ArrayList<Location> allStation = new ArrayList<Location>();//记录所有基站信息
+	Device ddd;
 	public static void main(String[] agrs) {
 		PApplet.main(new String[] { "com.gen.location.WuxiGsm" });
 	}
 
+	@Override
 	public void setup() {
 
-		// size(displayWidth,displayHeight,P2D);
+//		 size(displayWidth,displayHeight,P2D);
 		frame.setResizable(true);
-		size(1150, 780);
-
-		String mbTilesString = sketchPath(DATA_DIRECTORY+ "/map/wuxi-7-14.mbtiles");
+		size(1400, 780);
+		
+//		String mbTilesString = sketchPath(DATA_DIRECTORY+ "/map/WuxiRoad.mbtiles");
+		String mbTilesString = sketchPath(DATA_DIRECTORY+ "/map/wuxiRoadClip-7-16.mbtiles");
 //		String mbTilesString = sketchPath(DATA_DIRECTORY+ "/map/Wuxi-blue-7-16.mbtiles");
 		map = new UnfoldingMap(this, new MBTilesMapProvider(mbTilesString));
 		// map = new UnfoldingMap(this);
@@ -96,23 +103,24 @@ public class WuxiGsm extends PApplet {
 		// map.setPanningRestriction(wuxiLocation, 50);
 		MapUtils.createDefaultEventDispatcher(this, map);
 
-		frameRate(10);
+		frameRate(7);
 		//showLoc0-23代表每个小时，24代表所有点，25代表周末/工作日，true是工作日,26代表显示station信息
 		for(int i=0;i<27;i++)
 			showLoc[i] = false;
 		showLoc[24]=true;
+		
 			//获取设备信息
 		//99249788048010590
 		//99249764168730152
 		//99702516988779459
 		//99168971352354021
-		String device = "99168971352354021";
+		String device = "99249764168730152";
+		
 		try {
 			getLocations(device);
 			matrixGroup = new MatrixForGroup(device);//聚类信息
-			
+			ddd = new Device(device);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		cellGroup = matrixGroup.calAllGroup();//聚类信息
@@ -134,6 +142,7 @@ public class WuxiGsm extends PApplet {
 	}
 
 	public void getLocations(String device) throws ParseException {
+		getAllStationPosition();
 		weekdaysPart1 = new ArrayList<Location>();	weekdaysPart2 = new ArrayList<Location>();	weekdaysPart3 = new ArrayList<Location>();	weekdaysPart4 = new ArrayList<Location>();
 		weekendsPart1 = new ArrayList<Location>();	weekendsPart2 = new ArrayList<Location>();	weekendsPart3 = new ArrayList<Location>();	weekendsPart4 = new ArrayList<Location>();	
 		weekdaysAll = new ArrayList<Location>();
@@ -271,6 +280,7 @@ public class WuxiGsm extends PApplet {
 
 }
 
+	@Override
 	public void draw() {
 		background(0);
 		this.frame.setTitle("Wuxi GSM");
@@ -289,7 +299,7 @@ public class WuxiGsm extends PApplet {
 						properDraw(locByHourWeekends[i],mapNumberWeekends,i,255, 255, 0);
 				}
 				else{
-					if(!showLoc[25])
+					if(!showLoc[25])//--------------------------------------------------------------------------------------------------------------------------------
 						properStationDraw(calLocation.getStationLocByHourWeekdays()[i],calLocation.getStationMapNumberWeekdays(),i,255, 255, 0);
 					else
 						properStationDraw(calLocation.getStationLocByHourWeekends()[i],calLocation.getStationMapNumberWeekends(),i,255, 255, 0);
@@ -327,7 +337,7 @@ public class WuxiGsm extends PApplet {
 	}
 
 	private void properDraw(ArrayList<Location> loc,Map<String,Integer> m,int hour, int a, int b, int c){
-
+		allStationDraw();
 		//所有点
 		if(loc.size()!=0){
 			HashSet<Location> sss = new HashSet<Location>();
@@ -352,8 +362,9 @@ public class WuxiGsm extends PApplet {
 			ellipse(mpos.x, mpos.y, 35, 35);
 			
 			//聚类
+			showGroup = true;
 			if(hour<24&&showGroup){
-				ArrayList<Group> groups = cellGroup[hour];
+				ArrayList<Group> groups = ddd.cellGroup;//cellGroup[hour];
 				ArrayList<String> ce = new ArrayList<String>();
 				for(int i=0;i<groups.size();i++){
 					ce.addAll(groups.get(i).getCellGroup());
@@ -369,7 +380,7 @@ public class WuxiGsm extends PApplet {
 					stroke(0,0,0);
 					ellipse(cpos.x, cpos.y, 35, 35);
 					//标注聚类编号
-					if(i<groups.size()/2){
+					if(i<groups.size()){
 						fill(255);
 						this.textSize(21);
 						text(i, cpos.x, cpos.y);
@@ -395,6 +406,8 @@ public class WuxiGsm extends PApplet {
 				if(showLineBetweenGroup)
 				for(int i=0;i<groups.size();i++){
 					Group group =  groups.get(i);
+					if(group.getCellGroup().size()==0)
+						continue;
 					Location preloc = group.getCenterLocation();
 					ScreenPosition leftPos = map.getScreenPosition(preloc);
 					Location nextloc = matrixGroup.getNextGroupCenter(group);
@@ -409,7 +422,7 @@ public class WuxiGsm extends PApplet {
 						ellipse(x,y,5,5);
 					}
 				}
-				//标注每小时最大概率起始点 和 终止点
+				/*//标注每小时最大概率起始点 和 终止点
 				String id = startValueGroup[hour];
 				int index = Integer.parseInt(id.split("_")[1]);
 				Group sg = groups.get(index);
@@ -435,6 +448,7 @@ public class WuxiGsm extends PApplet {
 				String begin = path.get(0);
 				Location beginLoc = matrixGroup.stringToLoc(begin);//非常优秀的功能
 				ScreenPosition leftPos = map.getScreenPosition(beginLoc);
+				showPath = false;//-----------------------------------------
 				if(showPath)
 				for(int i=1;i<path.size();i++){
 					String n = path.get(i);
@@ -450,7 +464,7 @@ public class WuxiGsm extends PApplet {
 						ellipse(x,y,5,5);
 						leftPos = pos;
 					}					
-				}
+				}*/
 			}//24
 		}
 		
@@ -516,7 +530,7 @@ public class WuxiGsm extends PApplet {
 				n = m.get(l.x+"_"+l.y+"_"+time);
 				double d = 2*Math.log10(n)+2;
 				ScreenPosition pos = map.getScreenPosition(l);
-				if(pos.x!=0&&pos.y!=0){
+				if(pos.x!=0 && pos.y!=0){
 					ellipse(pos.x, pos.y , (int)d, (int)d);
 					lat.add(pos.x);
 					lng.add(pos.y);
@@ -548,63 +562,104 @@ public class WuxiGsm extends PApplet {
 		
 	}
 	
+	private void allStationDraw(){
+
+		for (Location l : allStation) {
+			noStroke();
+			fill(0, 255, 255, 100);
+			double d = 2.5;
+			ScreenPosition pos = map.getScreenPosition(l);
+			if(pos.x!=0 && pos.y!=0){
+				ellipse(pos.x, pos.y , (int)d, (int)d);
+			}
+	
+	}
+		
+}
+	//读取文件，获取map表，以便将stationID对照成其坐标
+	public void getAllStationPosition() {
+		File file = new File("./data/data/base_station_GPS.txt");
+		try {
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(
+					new FileInputStream(file), "utf-8")
+					);
+			try {
+				String line = br.readLine();
+				String[] rs = null;
+				while((line = br.readLine()) != null) {
+					rs = line.split("\\|");
+					Location location = new Location(Double.parseDouble(rs[4]),Double.parseDouble(rs[5]));
+					allStation.add(location);
+//						map.put(rs[0] +"_"+ rs[1], rs[4]+"_"+rs[5]);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		} catch (UnsupportedEncodingException | FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	private void randomDraw(ArrayList<Location> loc, int a, int b, int c) {
 		for (Location l : loc) {
 			ScreenPosition pos = map.getScreenPosition(l);
 			noStroke();
 			fill(a, b, c, 100);
-			 ellipse(pos.x+ random(0, 4), pos.y + random(0, 4), 12, 12);
+			ellipse(pos.x+ random(0, 4), pos.y + random(0, 4), 12, 12);
 		}
 	}
-	public void mouseEvent(MouseEvent event) {
-		int action = event.getAction();
+public void mouseEvent(MouseEvent event) {
+	int action = event.getAction();
 
-		if (event.getButton() == PConstants.LEFT) {
-			switch (action) {
-			case MouseEvent.CLICK:
-				mouseClicked();
-				for (Control control : controls) {
-					control.update();
-				}				
+	if (event.getButton() == PConstants.LEFT) {
+		switch (action) {
+		case MouseEvent.CLICK:
+			mouseClicked();
+			for (Control control : controls) {
+				control.update();
+			}				
 //				System.out.println(mouseX+mouseY);
-				printLoc();
-				break;
-			case MouseEvent.DRAG:
-				mouseDragged();
-				for (Control control : controls) {
-					control.update();
-				}
-				break;
-			case MouseEvent.MOVE:
-				mouseMoved();
-				break;
-			default:
-				break;
+			printLoc();
+			break;
+		case MouseEvent.DRAG:
+			mouseDragged();
+			for (Control control : controls) {
+				control.update();
 			}
+			break;
+		case MouseEvent.MOVE:
+			mouseMoved();
+			break;
+		default:
+			break;
 		}
-		else if (event.getButton() == PConstants.RIGHT) {
-			switch (action) {
-			case MouseEvent.CLICK:
-				mouseClicked();
-				buttonVisible = !buttonVisible;				
-				break;
-			case MouseEvent.DRAG:
-				mouseDragged();
-				buttonVisible = !buttonVisible;	
-				break;
-			case MouseEvent.MOVE:
-				mouseMoved();
-				break;
-			default:
-				break;
-			}
-		}
-		if ((action == MouseEvent.DRAG) || (action == MouseEvent.MOVE)) {
-			emouseX = mouseX;
-			emouseY = mouseY;			
-		}
-		
 	}
+	else if (event.getButton() == PConstants.RIGHT) {
+		switch (action) {
+		case MouseEvent.CLICK:
+			mouseClicked();
+			buttonVisible = !buttonVisible;				
+			break;
+		case MouseEvent.DRAG:
+			mouseDragged();
+			buttonVisible = !buttonVisible;	
+			break;
+		case MouseEvent.MOVE:
+			mouseMoved();
+			break;
+		default:
+			break;
+		}
+	}
+	if ((action == MouseEvent.DRAG) || (action == MouseEvent.MOVE)) {
+		emouseX = mouseX;
+		emouseY = mouseY;			
+	}
+	
+}
 	
 	public int whoIsChoosen(){
 		int pos=0;
@@ -614,6 +669,7 @@ public class WuxiGsm extends PApplet {
 		}
 		return pos;
 	}
+	@Override
 	public void keyPressed() {
 		int pos=0,nextpos=0,length = showLoc.length;  
 		if (keyPressed) {			

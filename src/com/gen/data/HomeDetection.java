@@ -58,7 +58,7 @@ public class HomeDetection {
 		double g;
 		double singleNum;
 		for(Location loc: locByHour[hour]){
-			singleNum = (int)stationNumAllDay.get(loc.x+"_"+loc.y+"_"+hour);
+			singleNum = stationNumAllDay.get(loc.x+"_"+loc.y+"_"+hour);
 			singleNum= singleNum*2;
 			g = singleNum / allRecordNum;
 			g = g*timeWeight;//*numWeight;

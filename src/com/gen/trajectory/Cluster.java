@@ -2,9 +2,6 @@ package com.gen.trajectory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-
-import processing.core.PApplet;
 
 public class Cluster {
 
@@ -15,7 +12,8 @@ public class Cluster {
 	double locations[][];//位置矩阵，记录出现概率
 	ArrayList<String> differentCell = new ArrayList<String>();//出现过的所有基站
 	
-	public Cluster(HashMap<String, Integer> cellIndexMap,double distanceBetweenCells[][],double locations[][],ArrayList<String> differentCell){
+	public Cluster(HashMap<String, Integer> cellIndexMap
+			,double distanceBetweenCells[][],double locations[][],ArrayList<String> differentCell){
 		this.distanceBetweenCells = distanceBetweenCells;
 		this.cellIndexMap = cellIndexMap;
 		this.locations = locations;

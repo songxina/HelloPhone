@@ -40,6 +40,7 @@ public class Hello extends PApplet{
 		}
 	}
 	
+	@Override
 	public void setup() {
 
 	
@@ -57,6 +58,7 @@ public class Hello extends PApplet{
 		
 		test();
 	}
+	@Override
 	public void draw() {
 		background(0);
 		this.frame.setTitle("Wuxi GSM");	

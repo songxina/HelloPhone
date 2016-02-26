@@ -1,9 +1,6 @@
 package com.widgets;
 
-import java.util.List;
-
 import processing.core.PApplet;
-import de.fhpotsdam.unfolding.geo.Location;
 
 public class CircleButton implements Control {
 	Boolean[] showLoc = null;

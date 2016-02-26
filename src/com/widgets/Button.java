@@ -1,9 +1,5 @@
 package com.widgets;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import de.fhpotsdam.unfolding.geo.Location;
 import processing.core.PApplet;
 
 public class Button implements Control {

@@ -28,10 +28,11 @@ import de.fhpotsdam.unfolding.geo.Location;
 public class QueryTrajectory {
 	
 	private String deviceID;
-	int dayNum=24;
-	//目前存的数据是20131205-20131225 共21天
+	public int dayNum=27;
+	//目前存的数据是20131205-20131231 共27天
 	private ArrayList<Location> locAll[][] = new ArrayList[dayNum][25];
 	private ArrayList<String> cellAll[][] = new ArrayList[dayNum][25];//
+	ArrayList<Integer> cellTimeAll[][] = new ArrayList[dayNum][25];//每个基站对应的时间，距离零点的分数数
 	private static Map<String,String> map = new HashMap<String,String>();//将stationID对照成其坐标
 	HashSet<String> differentCell = new HashSet<String>();
 	
@@ -48,14 +49,18 @@ public class QueryTrajectory {
 		return differentCell;
 	}
 
+	public ArrayList<Integer>[][] getCellTimeAll() {
+		return cellTimeAll;
+	}
+
 	public QueryTrajectory(String deviceID){
 		this.deviceID = deviceID;
 		for(int i=0;i<dayNum;i++)
 			for(int j=0;j<25;j++){
 				locAll[i][j] = new ArrayList();
 				cellAll[i][j] = new ArrayList();
+				cellTimeAll[i][j] = new ArrayList();
 			}
-				
 	}
 	
 	//得到dayNum天当中，每天24小时的轨迹，25为全天所有轨迹
@@ -66,9 +71,10 @@ public class QueryTrajectory {
 		ArrayList<String> days = getDays();
 		String uriAPI,formatHour="",formatHourPlus="";
 		int hour=0;
+		System.out.println("Data Fetching...");
 		//hour=25时表示全天的轨迹序列
 	for(;hour<25;hour++){
-		System.out.println("----"+hour);
+		
 		if(hour<9){
 			formatHour ="0"+hour;
 			formatHourPlus = "0"+(hour+1);
@@ -98,9 +104,10 @@ public class QueryTrajectory {
 					phoneRecordDao = weDontKnowWhere(phoneRecordDao);
 					locAll[count][hour].addAll(tranDaoToLoc(phoneRecordDao));	
 					
-					ArrayList<String> temp = tranDaoToString(phoneRecordDao);
+					ArrayList<String> temp = tranDaoCellToStringList(phoneRecordDao);
 					differentCell.addAll(temp);
-					cellAll[count][hour].addAll(temp);	
+					cellAll[count][hour].addAll(temp);
+					cellTimeAll[count][hour].addAll(tranDaoTimeToIntList(phoneRecordDao));
 					count++;
 //					if(count==1)
 //						for(PhoneRecordDAO p : phoneRecordDao)
@@ -109,6 +116,7 @@ public class QueryTrajectory {
 		
 //		}	
 	}
+	System.out.println("Data Fetching DONE!");
 	return locAll;
 	//print
 //		String out="";
@@ -138,115 +146,123 @@ public class QueryTrajectory {
 	}
 	
 	//读取文件，获取map表，以便将stationID对照成其坐标
-		public static void getTransMap() {
-			File file = new File("./data/data/base_station_GPS.txt");
+	public static void getTransMap() {
+		File file = new File("./data/data/base_station_GPS.txt");
+		try {
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(
+					new FileInputStream(file), "utf-8")
+					);
 			try {
-				BufferedReader br = new BufferedReader(
-						new InputStreamReader(
-						new FileInputStream(file), "utf-8")
-						);
-				try {
-					String line = br.readLine();
-					String[] rs = null;
-					while((line = br.readLine()) != null) {
-						rs = line.split("\\|");
-						map.put(rs[0] +"_"+ rs[1], rs[4]+"_"+rs[5]);
-					}
-//					System.out.println(map);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				String line = br.readLine();
+				String[] rs = null;
+				while((line = br.readLine()) != null) {
+					rs = line.split("\\|");
+					map.put(rs[0] +"_"+ rs[1], rs[4]+"_"+rs[5]);
 				}
-				
-			} catch (UnsupportedEncodingException | FileNotFoundException e) {
+//					System.out.println(map);
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-	
-		//得到已存入数据库中的日期
-		public static ArrayList<String> getDays(){
-			ArrayList<String> days = new ArrayList<String>();
-			BufferedReader br = null;
-			try {
-				File file = new File("./data/data/days.txt");
-				br = new BufferedReader(new InputStreamReader(new FileInputStream(
-						file), "utf-8"));
-				String line = "";
-				while ((line = br.readLine()) != null) {
-					if (line.length() < 8)
-						continue;
-					days.add(line);	
-				}						
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (br != null) {
-					try {
-						br.close();
-						br = null;
-					} catch (IOException e) {
-						e.printStackTrace();
-					}}}
-//			System.out.println(days);
-			return days;
-		}
-		
-		//将得到的PhoneRecordDAO数据变为location链表
-		public static  ArrayList<Location> tranDaoToLoc(ArrayList<PhoneRecordDAO> pdao){
-			ArrayList<Location> result = new ArrayList<Location>();
-			ArrayList<String> list = new ArrayList<String>();
-			for(PhoneRecordDAO p : pdao)
-				list.add(p.getAreaID()+'_'+p.getCellID());
 			
-			Gson gson = new Gson();
-			CellForm c = null ;
-			ArrayList<String> re = new ArrayList<String>();
-			for(String s :list)
-			{
-				if(s.equals("0_0"))
-					continue;
-				String lc =null;
-				lc= map.get(s);
-				if(lc!=null)
-					re.add(lc);
-				
-			}
-			result = transLocations(re);
-			return result;
+		} catch (UnsupportedEncodingException | FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+	}
+
+	//得到已存入数据库中的日期
+	public static ArrayList<String> getDays(){
+		ArrayList<String> days = new ArrayList<String>();
+		BufferedReader br = null;
+		try {
+			File file = new File("./data/data/days.txt");
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(
+					file), "utf-8"));
+			String line = "";
+			while ((line = br.readLine()) != null) {
+				if (line.length() < 8)
+					continue;
+				days.add(line);	
+			}						
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+					br = null;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}}}
+//			System.out.println(days);
+		return days;
+	}
 		
-		//将得到的PhoneRecordDAO数据变为location链表
-	public static  ArrayList<String> tranDaoToString(ArrayList<PhoneRecordDAO> pdao){
+	//将得到的PhoneRecordDAO数据变为location链表
+	public static  ArrayList<Location> tranDaoToLoc(ArrayList<PhoneRecordDAO> pdao){
+		ArrayList<Location> result = new ArrayList<Location>();
+		ArrayList<String> list = new ArrayList<String>();
+		for(PhoneRecordDAO p : pdao)
+			list.add(p.getAreaID()+'_'+p.getCellID());
+		
+		Gson gson = new Gson();
+		CellForm c = null ;
+		ArrayList<String> re = new ArrayList<String>();
+		for(String s :list)
+		{
+			if(s.equals("0_0"))
+				continue;
+			String lc =null;
+			lc= map.get(s);
+			if(lc!=null)
+				re.add(lc);
+			
+		}
+		result = transLocations(re);
+		return result;
+	}
+	
+		//将得到的PhoneRecordDAO数据中基站变为String链表
+	public static  ArrayList<String> tranDaoCellToStringList(ArrayList<PhoneRecordDAO> pdao){
 		ArrayList<String> result = new ArrayList<String>();
 		for(PhoneRecordDAO p : pdao)
 			result.add(p.getAreaID()+'_'+p.getCellID());
-
 		return result;
 	}
-		
-		//将string转换成location
-		public static ArrayList<Location> transLocations(ArrayList<String> list){
-			ArrayList<Location> loc = new ArrayList<Location>();
-			String temp[];
-			for(String lc :list){
-				temp = lc.split("_");
-				Location a = new Location(Float.parseFloat(temp[0]),Float.parseFloat(temp[1]));
-				loc.add(a);
-			}
-			return loc;
+	//将得到的PhoneRecordDAO数据中time变为String链表，距离0点的分钟数目
+	public static  ArrayList<Integer> tranDaoTimeToIntList(ArrayList<PhoneRecordDAO> pdao){
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		for(PhoneRecordDAO p : pdao){
+			Date date = p.getTime();
+			int minutesFromZero = date.getHours() * 60 + date.getMinutes();
+			result.add(minutesFromZero);
 		}
-		//判断是否是周末
-		public static boolean isWeekends(String day) throws ParseException{
-			DateFormat format1 = new SimpleDateFormat("yyyyMMdd");         
-			Date bdate = format1.parse(day); 
-			    Calendar cal = Calendar.getInstance();
-			    cal.setTime(bdate);
-			 if(cal.get(Calendar.DAY_OF_WEEK)==Calendar.SATURDAY||cal.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
-			    	return true;
-			 else 
-				 return false;
+		return result;
+	}	
+	//将string转换成location
+	public static ArrayList<Location> transLocations(ArrayList<String> list){
+		ArrayList<Location> loc = new ArrayList<Location>();
+		String temp[];
+		for(String lc :list){
+			temp = lc.split("_");
+			Location a = new Location(Float.parseFloat(temp[0]),Float.parseFloat(temp[1]));
+			loc.add(a);
 		}
+		return loc;
+	}
+	//判断是否是周末
+	public static boolean isWeekends(String day) throws ParseException{
+		DateFormat format1 = new SimpleDateFormat("yyyyMMdd");         
+		Date bdate = format1.parse(day); 
+		    Calendar cal = Calendar.getInstance();
+		    cal.setTime(bdate);
+		 if(cal.get(Calendar.DAY_OF_WEEK)==Calendar.SATURDAY||cal.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
+		    	return true;
+		 else 
+			 return false;
+	}
 	public static void main(String[] args) throws ParseException {
 		QueryTrajectory q  = new QueryTrajectory("99911000285858952");
 		q.getAllTrajectory();

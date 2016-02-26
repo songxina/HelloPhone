@@ -29,7 +29,7 @@ public class MPolygon {
 		for(int i=0; i<count; i++){
 			g.vertex(coords[i][0], coords[i][1]);
 		}
-		g.endShape(PApplet.CLOSE);
+		g.endShape(PConstants.CLOSE);
 	}
 
 	public int count(){

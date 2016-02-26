@@ -43,6 +43,7 @@ public class Show extends PApplet{
 		PApplet.main(new String[] { "com.gen.trajectory.Show" });
 	}
 
+	@Override
 	public void setup() {
 
 		// size(displayWidth,displayHeight,P2D);
@@ -83,6 +84,7 @@ public class Show extends PApplet{
 		
 	}
 
+	@Override
 	public void draw() {
 		background(0);
 		this.frame.setTitle("Wuxi GSM");
@@ -93,7 +95,7 @@ public class Show extends PApplet{
 		properDraw(255, 255, 0);
 		
 		//ÏÔÊ¾ÎÄ±¾
-		String day = q.getDays().get(date);
+		String day = QueryTrajectory.getDays().get(date);
 		String week = "";
 		if(isWeekends(day))
 			week = "WEEKENDS";
@@ -148,6 +150,7 @@ public class Show extends PApplet{
 //			 	ellipse(tloc.x, tloc.y, s, s);
 //		}
 	}
+	@Override
 	public void keyPressed() {
 
 		if (keyPressed) {						

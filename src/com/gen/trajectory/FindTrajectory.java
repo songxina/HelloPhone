@@ -1,5 +1,4 @@
 package com.gen.trajectory;
-import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -236,7 +235,7 @@ public class FindTrajectory {
 		dy1 = first.y - cen.y;
 		dx2 = second.x - cen.x;
 		dy2 = second.y - cen.y;
-		double c = (double)Math.sqrt(dx1*dx1+dy1*dy1) * (double)Math.sqrt(dx2*dx2 + dy2*dy2);
+		double c = Math.sqrt(dx1*dx1+dy1*dy1) * Math.sqrt(dx2*dx2 + dy2*dy2);
 		if(c==0)
 			return -1;
 		result = (dx1*dx2 + dy1*dy2)/c;

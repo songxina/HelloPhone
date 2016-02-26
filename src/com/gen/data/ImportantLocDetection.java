@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,19 +15,20 @@ import de.fhpotsdam.unfolding.geo.Location;
 
 public class ImportantLocDetection {
 
-	private  DataMatrix dataMatrix[];
-	private  String deviceID;
-	private  ArrayList<String> days = new ArrayList<String>();
-	private  Map<Location,Double> stationScore = new HashMap<Location,Double>();//所有的station的得分
-	private  Map<Location,Integer> stationDayNum = new HashMap<Location,Integer>();//每个station出现的天数
-	private  ArrayList<Location> allStations = new ArrayList<Location>();
-	private  int dayNum;
+	public  DataMatrix dataMatrix[];
+	public  String deviceID;
+	public  ArrayList<String> days = new ArrayList<String>();
+	public  Map<Location,Double> stationScore = new HashMap<Location,Double>();//所有的station的得分
+	public  Map<Location,Integer> stationDayNum = new HashMap<Location,Integer>();//每个station出现的天数
+	public  ArrayList<Location> allStations = new ArrayList<Location>();
+	public  int dayNum;
 
 	public ImportantLocDetection(String deviceID){
 		this.deviceID = deviceID;
 		getDays();
 		dayNum = days.size();
-		dataMatrix = new DataMatrix[dayNum];		
+		dataMatrix = new DataMatrix[dayNum];
+		calculate();
 	}
 	
 	public void getDataMatrix()  {
@@ -46,7 +46,7 @@ public class ImportantLocDetection {
 			stationNumByDayTemp = dataMatrix[i].getStationNumByDay();
 			int a = dataMatrix[i].getAllRecordNum();
 			for(Location loc : dataMatrix[i].getStationsByDay()){
-				if(stationNumByDayTemp.get(loc)>=a/50)//去除一些不重要的点
+//				if(stationNumByDayTemp.get(loc)>=a/50)//去除一些不重要的点
 				stations.add(loc);
 			}
 

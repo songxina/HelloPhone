@@ -6,16 +6,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.apache.log4j.jmx.Agent;
-
 public class MatrixForPersonAndCell {
 
 	QueryTrajectory queryTrajectory;
 	String deviceID ="";
-	int daySize = 24;
+	public int daySize ;//来自queryTrajectory
 	@SuppressWarnings("unchecked")
-	ArrayList<String> cellAll[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131225 共21天
-	ArrayList<String> cellAllCut[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131225 共21天，去掉不包含起始点和终止点的 序列
+	ArrayList<String> 	cellAll[][];//目前存的数据是20131205-20131231 共27天
+	//cellAllCut用来计算转移矩阵
+	ArrayList<String> 	cellAllCut[][];//目前存的数据是20131205-20131231 共27天，去掉不包含起始点和终止点的 序列
 	ArrayList<String> differentCell = new ArrayList<String>();//所有不同的基站
 	Map<String,String> cellToCoordinate = new HashMap<String,String>();//记录所有基站与坐标的对应关系
 	
@@ -30,10 +29,14 @@ public class MatrixForPersonAndCell {
 	public MatrixForPersonAndCell(String deviceID) throws ParseException{
 		this.deviceID = deviceID;
 		queryTrajectory = new QueryTrajectory(deviceID);
+		daySize = queryTrajectory.dayNum;
+		cellAllCut = new ArrayList[daySize][25];
+		cellAll = new ArrayList[daySize][25];
+		
 		queryTrajectory.getAllTrajectory();
 		cellAll = queryTrajectory.getCellAll();
 		HashSet<String> differentCelltemp = queryTrajectory.getDifferentCell();
-		cellToCoordinate = queryTrajectory.getMap();
+		cellToCoordinate = QueryTrajectory.getMap();
 		
 		differentCell.addAll(differentCelltemp);
 		size = differentCell.size();
@@ -214,7 +217,7 @@ public class MatrixForPersonAndCell {
 		for(String s:map.keySet()){
 			String temp[] = s.split("_");
 			CellInfo cell = new CellInfo(temp[0], temp[1]);
-			double possibility = (double)map.get(s)/sum;
+			double possibility = map.get(s)/sum;
 			cell.setPossbility(possibility);
 			result.add(cell);
 		}

@@ -9,29 +9,32 @@ import de.fhpotsdam.unfolding.geo.Location;
 
 public class MatrixForGroup {
 
-	ArrayList<String> differentCell = new ArrayList<String>();//出现过的所有基站
+	public ArrayList<String> differentCell = new ArrayList<String>();//出现过的所有基站
 	public HashMap<String, Integer> cellIndexMap = new HashMap<String, Integer>();//基站ID对矩阵序号
-	Map<String,String> cellToCoordinate = new HashMap<String,String>();//记录所有基站与坐标的对应关系，对应differentcell中
-	double locations[][];//位置矩阵，记录出现概率
-	double transferAllDay[][];//全天转移矩阵。记录转移概率
-	double transferByHour[][][];//每小时转移矩阵。记录转移概率
-	int size = 0;//不同基站的个数
+	public Map<String,String> cellToCoordinate = new HashMap<String,String>();//记录所有基站与坐标的对应关系，对应differentcell中
+	public double locations[][];//位置矩阵，记录出现概率
+	public double transferAllDay[][];//全天转移矩阵。记录转移概率
+	public double transferByHour[][][];//每小时转移矩阵。记录转移概率
+	public int size = 0;//不同基站的个数
 	public double distanceBetweenCells[][];//记录不同基站间的距离
-	MatrixForPersonAndCell matrix;
-	String deviceID;
+	public MatrixForPersonAndCell matrix;
+	public String deviceID;
 	
 	//聚类
-	int daySize = 24;
-	ArrayList<String> cellAll[][] = new ArrayList[daySize][25];	//目前存的数据是20131205-20131228 共25天
-	Cluster cluster;
-	HashMap<String, String> cellToGroup = new HashMap<String, String>();//记录基站对应聚类
-	ArrayList<Group> cellGroup[] = new ArrayList[24];//记录每小时聚类
-	double groupTransferByHour[][][];//以聚类为单位，每小时转移矩阵。记录转移概率（聚类中所有点记录之和）
+	public int daySize = 27;
+	public ArrayList<String> cellAll[][];	//目前存的数据是20131205-20131231 共27天
+	public Cluster cluster;
+	public HashMap<String, String> cellToGroup = new HashMap<String, String>();//记录基站对应聚类
+	public ArrayList<Group> cellGroup[] = new ArrayList[24];//记录每小时聚类
+	public double groupTransferByHour[][][];//以聚类为单位，每小时转移矩阵。记录转移概率（聚类中所有点记录之和）
 	//每个聚类出现的概率，记录在group类中的possibility中
 	
 	public MatrixForGroup(String device) throws ParseException{
 		deviceID = device;//"99249764168730152";
 		matrix = new MatrixForPersonAndCell(deviceID);
+		daySize = matrix.daySize;
+		cellAll = new ArrayList[daySize][25];
+		
 		differentCell = matrix.getDifferentCell();
 		cellToCoordinate = matrix.getCellToCoordinate();
 		locations = matrix.getLocations();

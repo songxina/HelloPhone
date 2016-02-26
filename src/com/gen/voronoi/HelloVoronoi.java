@@ -59,6 +59,7 @@ public class HelloVoronoi extends PApplet{
 		  myRegions[i].draw(this); // draw this shape
 		}
 	}
+	@Override
 	public void setup() {
 	
 		frame.setResizable(true);
@@ -76,6 +77,7 @@ public class HelloVoronoi extends PApplet{
 		
 		test();
 	}
+	@Override
 	public void draw() {
 		background(0);
 		this.frame.setTitle("Wuxi GSM");	

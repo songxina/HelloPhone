@@ -34,7 +34,7 @@ public class DataMatrix {
 	private Map<String,String> map = new HashMap<String,String>();//station转location
 	private Map<Location,Integer> stationHourNum;//全天每个基站出现的小时数目
 	private int allRecordNum = 0; //该天内所有记录的总数
-
+	ArrayList<PhoneRecordDAO> cellsAllDay = new ArrayList<PhoneRecordDAO>();//记录该天所有基站轨迹信息；可使用tranDaoToLoc转换
 
 	public DataMatrix(String dayID,String deviceID){
 		this.dayID = dayID;
@@ -77,7 +77,7 @@ public class DataMatrix {
 			String jsonString = HttpUtil.sendPost(uriAPI, "");			
 			CellForm cell =  gson.fromJson(jsonString, CellForm.class);
 			pDaos.addAll(cell.getPList());
-			
+			cellsAllDay.addAll(cell.getPList());//记录该天所有基站轨迹信息
 			calMapNumber(pDaos,stationNumByHour[hour]);
 			for(Location loc : stationNumByHour[hour].keySet()){
 				stationsByHour[hour].add(loc);

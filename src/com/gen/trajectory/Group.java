@@ -1,6 +1,7 @@
 package com.gen.trajectory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import de.fhpotsdam.unfolding.geo.Location;
 
@@ -13,6 +14,32 @@ public class Group {
 	String centerCellLocaion;
 	public double startValue = 0;//衡量该group为起始group的概率
 	public double endValue = 0;//衡量该group为终止group的概率
+	public double homeScore = 0;
+	public double workScore = 0;
+	public boolean isImportLoc = false;
+	ArrayList<Integer> allTime = new ArrayList<Integer>();//记录所有基站的时间
+	
+	public double getHomeScore() {
+		return homeScore;
+	}
+	public void setHomeScore(double homeScore) {
+		this.homeScore = homeScore;
+	}
+	public double getWorkScore() {
+		return workScore;
+	}
+	public void setWorkScore(double workScore) {
+		this.workScore = workScore;
+	}
+	
+	public ArrayList<Integer> getAllTime() {
+		return allTime;
+	}
+
+	//加入时间
+	public void addTime(int t){
+		allTime.add(t);
+	}
 	
 	//查询group是否包括cell
 	public boolean hasCell(String cell){
@@ -70,6 +97,17 @@ public class Group {
 	public void setCellLocationGroup(ArrayList<Location> cellLocationGroup) {
 		this.cellLocationGroup = cellLocationGroup;
 	}
-
-	
+	//获取time的中位数medianTime
+	public int calMedianTime(){
+		Collections.sort(allTime);
+		int size = allTime.size();
+		int medianTime = allTime.get(size/2);
+		return medianTime;
+	}
+	public void print(){
+		System.out.print(this.gourpID+" : ");
+		for(String s:cellGroup)
+			System.out.print(s+"  ");
+		System.out.println();
+	}
 }
