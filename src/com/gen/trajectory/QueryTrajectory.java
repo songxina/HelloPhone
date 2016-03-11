@@ -28,11 +28,11 @@ import de.fhpotsdam.unfolding.geo.Location;
 public class QueryTrajectory {
 	
 	private String deviceID;
-	public int dayNum=27;
-	//目前存的数据是20131205-20131231 共27天
-	private ArrayList<Location> locAll[][] = new ArrayList[dayNum][25];
-	private ArrayList<String> cellAll[][] = new ArrayList[dayNum][25];//
-	ArrayList<Integer> cellTimeAll[][] = new ArrayList[dayNum][25];//每个基站对应的时间，距离零点的分数数
+	public int dayNum;
+	//目前存的数据是20131205-20131231 共27天;
+	private ArrayList<Location> locAll[][] ;
+	private ArrayList<String> cellAll[][] ;//
+	ArrayList<Integer> cellTimeAll[][] ;//每个基站对应的时间，距离零点的分数数
 	private static Map<String,String> map = new HashMap<String,String>();//将stationID对照成其坐标
 	HashSet<String> differentCell = new HashSet<String>();
 	
@@ -55,6 +55,11 @@ public class QueryTrajectory {
 
 	public QueryTrajectory(String deviceID){
 		this.deviceID = deviceID;
+		ArrayList<String> days = getDays();
+		dayNum = days.size();
+		locAll= new ArrayList[dayNum][25];
+		cellAll = new ArrayList[dayNum][25];
+		cellTimeAll = new ArrayList[dayNum][25];
 		for(int i=0;i<dayNum;i++)
 			for(int j=0;j<25;j++){
 				locAll[i][j] = new ArrayList();
@@ -117,6 +122,7 @@ public class QueryTrajectory {
 //		}	
 	}
 	System.out.println("Data Fetching DONE!");
+	
 	return locAll;
 	//print
 //		String out="";

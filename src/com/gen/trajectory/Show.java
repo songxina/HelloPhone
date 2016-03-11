@@ -20,8 +20,8 @@ import de.fhpotsdam.unfolding.utils.ScreenPosition;
 public class Show extends PApplet{
 
 	public QueryTrajectory q;
-	int dayNum=24;
-	private ArrayList<Location> locAll[][] = new ArrayList[dayNum][25];	
+	int dayNum;
+	private ArrayList<Location> locAll[][];	
 	private static final long serialVersionUID = -7202118212240992970L;
 	private static final String DATA_DIRECTORY = "./data";
 	Location wuxiLocation = new Location(31.587756f, 120.313505f);
@@ -66,8 +66,10 @@ public class Show extends PApplet{
 		//99249788048010590
 		//99702516988779459
 		//99168971352354021
-		String device = "99249764168730152";
+		String device = "99694274698088286";
 		q = new QueryTrajectory(device);
+		dayNum = q.dayNum;
+		locAll = new ArrayList[dayNum][25];
 		try {
 			locAll = q.getAllTrajectory();
 			find = new MatrixForGroup(device);
